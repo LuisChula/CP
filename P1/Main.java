@@ -22,8 +22,11 @@ public class Main {
         int within = 0;
         for(int i = 0; i < nThreads; i++) {
             try{
+                //System.out.println("thread before"+i);
                 ts[i].join();
+                //System.out.println("thread after"+i);
                 within += mcps[i].getWithin();
+                //System.out.println(mcps[i].getWithin());
             } catch(Exception e){
                 System.out.println(e);
             }

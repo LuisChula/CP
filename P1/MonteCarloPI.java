@@ -3,7 +3,7 @@ import java.util.*;
 public class MonteCarloPI implements Runnable {
 
     private int nPoints;
-    private int within;
+    private volatile int within;
 
     public MonteCarloPI(int nPoints){
         this.nPoints = nPoints;
