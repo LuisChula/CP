@@ -1,6 +1,14 @@
 import java.util.*;
 
-public class MonteCarloPI {
+public class MonteCarloPI implements Runnable {
+
+    private int nPoints;
+    private int within;
+
+    public MonteCarloPI(int nPoints){
+        this.nPoints = nPoints;
+        within = -1;
+    }
 
     private static double randInt(int rangeMin, int rangeMax) {
         Random r = new Random();
@@ -12,25 +20,33 @@ public class MonteCarloPI {
         return (Math.pow(x, 2) + Math.pow(y, 2) < 1) ? true : false;
     }
 
-    private static void print(int nPoints, int within, double pi){
+    public static void print(int nPoints, int within, double pi){
         System.out.println("Total Number of points: " + nPoints);
         System.out.println("Points within circle: " + within);
         System.out.println("Pi estimation: " + pi);
     }
 
-    public static void main(String[] args) {
-        int nPoints = Integer.parseInt(args[0]);
-        int within = 0;
-        for(int i = 0; i < nPoints; i++){
-            double x = randInt(-1, 1);
-            double y = randInt(-1, 1);
-            if(isInTheCircle(x, y))
-                within++;
-        }
-        double pi = 4.0*((double)within/(double)nPoints);
+    public int getWithin(){
+        return within;
+    }
 
-        print(nPoints, within, pi);
-        
+    @Override
+    public void run() {
+        try {
+            within = 0;
+            for(int i = 0; i < nPoints; i++){
+                double x = randInt(-1, 1);
+                double y = randInt(-1, 1);
+                if(isInTheCircle(x, y))
+                    within++;
+            }
+            this.within = within;
+            /*double pi = 4.0*((double)within/(double)nPoints);
+            print(nPoints, within, pi);*/
+
+        } catch(Exception e){
+            System.out.println(e);
+        }
     } 
     
 }
