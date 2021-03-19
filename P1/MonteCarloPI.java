@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MonteCarloPI implements Runnable {
 
@@ -26,12 +27,11 @@ public class MonteCarloPI implements Runnable {
 
     @Override
     public void run() {
-        Random r = new Random();
         try {
             within = 0;
             for(int i = 0; i < nPoints; i++){
-                double x = r.nextDouble();
-                double y = r.nextDouble();
+                double x = ThreadLocalRandom.current().nextDouble();
+                double y = ThreadLocalRandom.current().nextDouble();
                 if(isInTheCircle(x, y))
                     within++;
             }
