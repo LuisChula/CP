@@ -1,33 +1,53 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
+#include <stdbool.h>
 
-// A normal C function that is executed as a thread
-// when its name is specified in pthread_create()
+bool isInTheCircle(double x, double y)
+{
+   return ((x*x) + (y*y) < 1) ? true : false;
+}
+
+void myPrint(int nPoints, int within, double pi)
+{
+   printf("Total Number of points: %d\n", nPoints);
+   printf("Points within circle: %d\n", within);
+   printf("Pi estimation: %f\n", pi);
+}
+
 void* monteCarloPi(void *arg)
 {
    int v = *(int*)arg;
-   for(int i = 0; i < 100; i++){
-      printf("Thread %d => %d\n", v, i);
+   int within = 0;
+   for(int i = 0; i < v; i++){
+      double x = ((double) rand() / (RAND_MAX));
+      double y = ((double) rand() / (RAND_MAX));
+      if(isInTheCircle(x, y))
+         within++;
    }
-	return NULL;
+	return (void*)within;
 }
 
-int main()
+int main(int argc, char **argv)
 {
-   int nThreads = 4;
-   int nRuns = 100;
+   int nRuns = atoi(argv[1]);
+   int nThreads = atoi(argv[2]);
    int r = nRuns/nThreads;
+   void *res;
 
    pthread_t t[nThreads];
-   printf("Before Thread\n");
    for(int i = 0; i < nThreads; i++){
-      pthread_create(&t[i], NULL, monteCarloPi, &i);
+      pthread_create(&t[i], NULL, monteCarloPi, &r);
    }
 
+   int within = 0;
    for(int i = 0; i < nThreads; i++){
-      pthread_join(t[i], NULL);
+      pthread_join(t[i], &res);
+      within += (int)res;
    }
-	printf("After Thread\n");
+
+   double pi = 4.0*((double)within/(double)nRuns);
+   myPrint(nRuns, within, pi);
 	
    return 0;
 }
