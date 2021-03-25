@@ -5,10 +5,14 @@
 #include <time.h>
 #include <sys/time.h>
 
-static unsigned int seed = 0;
+struct ThreadParams {
+    int nPoints;
+    unsigned int state;
+};
 
-double rnd() {
-    return (double) rand_r(&seed) / (RAND_MAX);
+double rnd(void* p_mystate) {
+   unsigned int *mystate = p_mystate;
+   return (double) rand_r(mystate) / (RAND_MAX);
 }
 
 void myPrint(int nPoints, int within, double pi, double time)
@@ -19,13 +23,14 @@ void myPrint(int nPoints, int within, double pi, double time)
    printf("Real time: %f\n", time);
 }
 
-void* monteCarloPi(void *arg)
+void* monteCarloPi(void *args)
 {
-   int v = *(int*)arg;
+   struct ThreadParams *readParams = args;
+   int v = readParams->nPoints;
    int within = 0;
    for(int i = 0; i < v; i++){
-      double x = rnd();
-      double y = rnd();
+      double x = rnd(&readParams->state);
+      double y = rnd(&readParams->state);
       if((x*x) + (y*y) <= 1)
          within++;
    }
@@ -44,9 +49,13 @@ int main(int argc, char **argv)
    int r = nRuns/nThreads;
    int* res;
 
+   unsigned int states[nThreads];
    pthread_t threads[nThreads];
    for(int i = 0; i < nThreads; i++){
-      pthread_create(&threads[i], NULL, monteCarloPi, &r);
+      struct ThreadParams tp;
+      tp.nPoints = r;
+      tp.state = states[i];
+      pthread_create(&threads[i], NULL, monteCarloPi, &tp);
    }
 
    int within = 0;
