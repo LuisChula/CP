@@ -3,12 +3,12 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <time.h>
-
 #include <sys/time.h>
 
-bool isInTheCircle(double x, double y)
-{
-   return ((x*x) + (y*y) < 1) ? true : false;
+static unsigned int seed = 0;
+
+double rnd() {
+    return (double) rand_r(&seed) / (RAND_MAX);
 }
 
 void myPrint(int nPoints, int within, double pi, double time)
@@ -24,12 +24,14 @@ void* monteCarloPi(void *arg)
    int v = *(int*)arg;
    int within = 0;
    for(int i = 0; i < v; i++){
-      double x = ((double) rand() / (RAND_MAX));
-      double y = ((double) rand() / (RAND_MAX));
-      if(isInTheCircle(x, y))
+      double x = rnd();
+      double y = rnd();
+      if((x*x) + (y*y) <= 1)
          within++;
    }
-	return (void*)within;
+   int* result = malloc(sizeof(int));
+   *result = within;
+	return (void*) result;
 }
 
 int main(int argc, char **argv)
@@ -40,7 +42,7 @@ int main(int argc, char **argv)
    int nRuns = atoi(argv[1]);
    int nThreads = atoi(argv[2]);
    int r = nRuns/nThreads;
-   void *res;
+   int* res;
 
    pthread_t threads[nThreads];
    for(int i = 0; i < nThreads; i++){
@@ -49,8 +51,9 @@ int main(int argc, char **argv)
 
    int within = 0;
    for(int i = 0; i < nThreads; i++){
-      pthread_join(threads[i], &res);
-      within += (int)res;
+      pthread_join(threads[i], (void**) &res);
+      within += *res;
+      free(res);
    }
 
    double pi = 4.0*((double)within/(double)nRuns);
