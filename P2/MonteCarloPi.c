@@ -5,6 +5,10 @@
 #include <time.h>
 #include <sys/time.h>
 
+// Solution using mutex
+/*pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+int counter = 0;*/
+
 struct ThreadParams {
     int nPoints;
     unsigned int state;
@@ -31,8 +35,12 @@ void* monteCarloPi(void *args)
    for(int i = 0; i < v; i++){
       double x = rnd(&readParams->state);
       double y = rnd(&readParams->state);
-      if((x*x) + (y*y) <= 1)
+      if((x*x) + (y*y) < 1) {
          within++;
+         /*pthread_mutex_lock(&mutex);
+         counter++;
+         pthread_mutex_unlock(&mutex);*/
+      }  
    }
    int* result = malloc(sizeof(int));
    *result = within;
@@ -64,6 +72,8 @@ int main(int argc, char **argv)
       within += *res;
       free(res);
    }
+
+   // printf("counter=%d | within=%d", counter, within);
 
    double pi = 4.0*((double)within/(double)nRuns);
 
