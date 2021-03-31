@@ -9,11 +9,6 @@
 /*pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int counter = 0;*/
 
-struct ThreadParams {
-    int nPoints;
-    unsigned int state;
-};
-
 double rnd(void* p_mystate) {
    unsigned int *mystate = p_mystate;
    return (double) rand_r(mystate) / (RAND_MAX);
@@ -29,17 +24,14 @@ void myPrint(int nPoints, int within, double pi, double time)
 
 void* monteCarloPi(void *args)
 {
-   struct ThreadParams *readParams = args;
-   int v = readParams->nPoints;
+   int *v = args;
    int within = 0;
-   for(int i = 0; i < v; i++){
-      double x = rnd(&readParams->state);
-      double y = rnd(&readParams->state);
+   unsigned int seed = pthread_self() ^ time(NULL);
+   for(int i = 0; i < *v; i++){
+      double x = rnd(&seed);
+      double y = rnd(&seed);
       if((x*x) + (y*y) < 1) {
          within++;
-         /*pthread_mutex_lock(&mutex);
-         counter++;
-         pthread_mutex_unlock(&mutex);*/
       }  
    }
    int* result = malloc(sizeof(int));
@@ -57,13 +49,9 @@ int main(int argc, char **argv)
    int r = nRuns/nThreads;
    int* res;
 
-   unsigned int states[nThreads];
    pthread_t threads[nThreads];
    for(int i = 0; i < nThreads; i++){
-      struct ThreadParams tp;
-      tp.nPoints = r;
-      tp.state = pthread_self() ^ time(NULL);
-      pthread_create(&threads[i], NULL, monteCarloPi, &tp);
+      pthread_create(&threads[i], NULL, monteCarloPi, &r);
    }
 
    int within = 0;
@@ -73,7 +61,7 @@ int main(int argc, char **argv)
       free(res);
    }
 
-   // printf("counter=%d | within=%d", counter, within);
+   //printf("counter=%d | within=%d", counter, within);
 
    double pi = 4.0*((double)within/(double)nRuns);
 
