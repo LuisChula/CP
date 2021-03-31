@@ -62,7 +62,7 @@ int main(int argc, char **argv)
    for(int i = 0; i < nThreads; i++){
       struct ThreadParams tp;
       tp.nPoints = r;
-      tp.state = states[i];
+      tp.state = pthread_self() ^ time(NULL);
       pthread_create(&threads[i], NULL, monteCarloPi, &tp);
    }
 
