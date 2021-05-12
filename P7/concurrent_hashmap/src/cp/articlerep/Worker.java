@@ -16,9 +16,9 @@ public class Worker extends Thread {
 	private final String[] sharedDict;
 	private final StopVar sharedStop;
 	
-	private int numOps = 0;
-	private int succPutOps = 0;
-	private int succRemOps = 0;
+	private static int numOps = 0;
+	private static int succPutOps = 0;
+	private static int succRemOps = 0;
 	private int succGetOps = 0;
 	
 	public Worker(String[] sharedDict, StopVar sharedStop) {
@@ -34,19 +34,23 @@ public class Worker extends Thread {
 			int id = rand.nextInt(sharedDict.length);
 			if (op < 25) {
 				// probability 25% of trying to insert 'id'
-				if (sharedMap.put(id, sharedDict[id]) == null) {
-					succPutOps++;
-					if (Main.SANITY_CHECK) {
-						Main.addedIds.add(id);
+				synchronized (this) {
+					if (sharedMap.put(id, sharedDict[id]) == null) {
+						succPutOps++;
+						if (Main.SANITY_CHECK) {
+							Main.addedIds.add(id);
+						}
 					}
 				}
 			}
 			else if (op < 50) {
 				// probability 25% of trying to remove 'id'
-				if (sharedMap.remove(id) != null) {
-					succRemOps++;
-					if (Main.SANITY_CHECK) {
-						Main.addedIds.remove(id);
+				synchronized (this) {
+					if (sharedMap.remove(id) != null) {
+						succRemOps++;
+						if (Main.SANITY_CHECK) {
+							Main.addedIds.remove(id);
+						}
 					}
 				}
 			}
@@ -64,11 +68,11 @@ public class Worker extends Thread {
 		return numOps;
 	}
 
-	public int getSuccPutOps() {
+	public static int getSuccPutOps() {
 		return succPutOps;
 	}
 
-	public int getSuccRemOps() {
+	public static int getSuccRemOps() {
 		return succRemOps;
 	}
 

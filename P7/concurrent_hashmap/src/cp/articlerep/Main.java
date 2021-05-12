@@ -66,6 +66,10 @@ public class Main {
 		
 		// do sanity sheck
 		if (SANITY_CHECK) {
+			System.out.println(addedIds.size() +"!="+ (Worker.getSuccPutOps()-Worker.getSuccRemOps()));
+			if(addedIds.size() != (Worker.getSuccPutOps()-Worker.getSuccRemOps())) {
+				throw new RuntimeException("addedIds and (Worker.getSuccPutOps()-Worker.getSuccRemOps()) dont have the same size");
+			}
 			for (Integer id : addedIds) {
 				if (Worker.getSharedMap().get(id) == null) {
 					throw new RuntimeException("Id "+id+" does not exist in map!");
